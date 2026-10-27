@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>静态部署 · 极简作品集</title>
+  <style>
+    /* ---------- 全局重置与变量 ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent: #3b82f6;
+      --accent-soft: #eef2ff;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --radius: 1rem;
+      --radius-sm: 0.75rem;
+    }
+
+    /* 暗色模式（手动切换时使用 data-theme="dark"） */
+    [data-theme="dark"] {
+      --bg: #0b1120;
+      --surface: #111827;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --accent: #60a5fa;
+      --accent-soft: #1e293b;
+      --border: #1e293b;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ---------- 导航栏 ---------- */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .logo span {
+      background: var(--accent);
+      color: white;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.15s;
+      padding: 0.25rem 0;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--text-primary);
+      border-bottom-color: var(--accent);
+    }
+
+    /* 主题切换按钮 */
+    .theme-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: 1.15rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      color: var(--text-primary);
+    }
+
+    .theme-btn:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      transform: rotate(15deg);
+    }
+
+    /* ---------- 主区域 ---------- */
+    main {
+      flex: 1;
+      padding: 3rem 0 4rem;
+    }
+
+    /* Hero 区 */
+    .hero {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 4rem;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.3px;
+      border: 1px solid var(--border);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero h1 .highlight {
+      color: var(--accent);
+      border-bottom: 4px solid var(--accent-soft);
+      display: inline-block;
+      padding-bottom: 0.1rem;
+    }
+
+    .hero p {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 550px;
+      margin: 0 auto 2rem;
+    }
+
+    /* 按钮 */
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.8rem;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-outline:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* 卡片网格 */
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-title span {
+      background: var(--accent);
+      width: 0.35rem;
+      height: 1.75rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-4px);
+      border-color: var(--accent);
+    }
+
+    .card-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.75rem;
+      background: var(--accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      color: var(--accent);
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      flex: 1;
+    }
+
+    /* 卡片展开的额外描述 */
+    .card-extra {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, margin 0.35s ease;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .card.expanded .card-extra {
+      max-height: 200px;
+      margin-top: 1rem;
+    }
+
+    .card-tag {
+      display: inline-block;
+      margin-top: 1.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 0.25rem 0.9rem;
+      border-radius: 100px;
+      align-self: flex-start;
+      letter-spacing: 0.2px;
+    }
+
+    /* 状态栏 */
+    .status-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .status-bar:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .status-text {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .dot {
+      width: 0.65rem;
+      height: 0.65rem;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    }
+
+    .status-badge {
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 0.3rem 1rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    /* 页脚 */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0 2.5rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.15s;
+      cursor: pointer;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    /* 回到顶部按钮（悬浮） */
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: all 0.25s ease;
+      z-index: 999;
+    }
+
+    .back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .back-to-top:hover {
+      background: #2563eb;
+      transform: translateY(-3px);
+    }
+
+    /* 全局提示 Toast */
+    .toast {
+      position: fixed;
+      bottom: 6rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text-primary);
+      color: var(--bg);
+      padding: 0.7rem 1.5rem;
+      border-radius: 100px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      white-space: nowrap;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .toast.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ---------- 响应式 ---------- */
+    @media (max-width: 640px) {
+      .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .nav-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .nav-links {
+        gap: 1.25rem;
+        flex-wrap: wrap;
+      }
+
+      main {
+        padding: 2rem 0 3rem;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .footer {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .back-to-top {
+        bottom: 1.25rem;
+        right: 1.25rem;
+      }
+    }
+
+    /* 焦点样式 */
+    .btn:focus-visible,
+    .nav-links a:focus-visible,
+    .footer-links a:focus-visible,
+    .theme-btn:focus-visible,
+    .back-to-top:focus-visible,
+    .card:focus-visible,
+    .status-bar:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 悬浮回到顶部 -->
+  <button class="back-to-top" id="backToTop" aria-label="回到顶部">↑</button>
+
+  <!-- 全局 Toast 提示 -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- 导航栏 -->
+  <div class="container">
+    <nav class="navbar">
+      <a href="#" class="logo" id="logo">
+        <span>✦</span>
+        static.dev
+      </a>
+      <div class="nav-right">
+        <ul class="nav-links" id="navLinks">
+          <li><a href="#" class="active" data-nav="home">首页</a></li>
+          <li><a href="#" data-nav="projects">项目</a></li>
+          <li><a href="#" data-nav="docs">文档</a></li>
+          <li><a href="#" data-nav="about">关于</a></li>
+        </ul>
+        <button class="theme-btn" id="themeToggle" aria-label="切换主题" title="切换暗色/亮色模式">🌙</button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- 主内容 -->
+  <main>
+    <div class="container">
+      <!-- Hero 区 -->
+      <section class="hero">
+        <div class="hero-badge">⚡ 静态部署 · 开箱即用</div>
+        <h1>
+          一个<span class="highlight">纯粹的</span>静态页面
+        </h1>
+        <p>
+          无需构建工具，无需后端依赖。干净、快速、可直接部署至任何静态托管服务。
+        </p>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="startBtn">开始使用 →</button>
+          <button class="btn btn-outline" id="docsBtn">查看文档</button>
+        </div>
+      </section>
+
+      <!-- 卡片网格 -->
+      <section>
+        <h2 class="section-title"><span></span>静态部署的核心优势</h2>
+        <div class="card-grid" id="cardGrid">
+          <article class="card" tabindex="0">
+            <div class="card-icon">⚡</div>
+            <h3>极速加载</h3>
+            <p>纯静态资源，无需服务器渲染。CDN 边缘分发，毫秒级响应，给用户流畅体验。</p>
+            <div class="card-extra">静态文件可被缓存到全球 CDN 节点，用户从最近节点获取内容，TTFB 通常低于 50ms。</div>
+            <span class="card-tag">性能优先</span>
+          </article>
+          <article class="card" tabindex="0">
+            <div class="card-icon">🛡️</div>
+            <h3>安全可靠</h3>
+            <p>无数据库、无动态接口，攻击面极小。天然抵御 SQL 注入、XSS 等常见威胁。</p>
+            <div class="card-extra">没有服务器端代码执行，也就没有后端漏洞。静态文件仅通过 HTTP 传输，攻击面几乎为零。</div>
+            <span class="card-tag">默认安全</span>
+          </article>
+          <article class="card" tabindex="0">
+            <div class="card-icon">📦</div>
+            <h3>零配置部署</h3>
+            <p>一个 HTML 文件即可上线。支持 GitHub Pages、Vercel、Netlify 等平台一键发布。</p>
+            <div class="card-extra">通常只需拖拽文件或连接 Git 仓库即可。无需配置服务器环境、数据库或运行时。</div>
+            <span class="card-tag">开箱即用</span>
+          </article>
+          <article class="card" tabindex="0">
+            <div class="card-icon">📱</div>
+            <h3>完全响应式</h3>
+            <p>适配手机、平板、桌面。弹性网格与系统字体，在任何设备上都保持优雅。</p>
+            <div class="card-extra">使用 CSS Grid 与弹性布局，配合系统字体，无需额外媒体资源，在各种屏幕上都自然舒适。</div>
+            <span class="card-tag">自适应</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- 状态栏（点击复制网址） -->
+      <div class="status-bar" id="statusBar" role="button" tabindex="0" title="点击复制当前网址">
+        <div class="status-text">
+          <span class="dot"></span>
+          当前页面为纯静态版本 · 已就绪
+        </div>
+        <div class="status-badge">✓ 点击复制地址</div>
+      </div>
+
+      <!-- 小贴士 -->
+      <section style="margin-top: 3rem;">
+        <h2 class="section-title"><span></span>静态部署小贴士</h2>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow-sm);">
+          <p style="color: var(--text-secondary); margin-bottom: 1.25rem;">
+            这是一个完全静态的 HTML 页面，不依赖外部框架或库。您可以将此文件直接拖入任何静态托管平台，即可获得线上地址。
+          </p>
+          <ul style="color: var(--text-secondary); list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+            <li>✓ GitHub Pages</li>
+            <li>✓ Netlify</li>
+            <li>✓ Vercel</li>
+            <li>✓ Cloudflare Pages</li>
+            <li>✓ 任何对象存储</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <div class="container">
+    <footer class="footer">
+      <div>© 2025 静态部署演示 · 保留所有权利</div>
+      <div class="footer-links">
+        <a href="#" data-footer="privacy">隐私</a>
+        <a href="#" data-footer="terms">条款</a>
+        <a href="#" data-footer="contact">联系</a>
+        <a href="#" data-footer="github">GitHub</a>
+        <a href="#" id="topLink">回到顶部 ↑</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ================= 交互脚本 ================= -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ---------- 工具：Toast 提示 ---------- */
+      const toastEl = document.getElementById('toast');
+      let toastTimer = null;
+
+      function showToast(message, duration = 2000) {
+        toastEl.textContent = message;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toastEl.classList.remove('show');
+        }, duration);
+      }
+
+      /* ---------- 1. 暗色/亮色主题切换 ---------- */
+      const themeToggle = document.getElementById('themeToggle');
+      const root = document.documentElement;
+
+      // 读取本地保存的主题（若不存在则跟随系统）
+      function getInitialTheme() {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark' || saved === 'light') return saved;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      function applyTheme(theme) {
+        if (theme === 'dark') {
+          root.setAttribute('data-theme', 'dark');
+          themeToggle.textContent = '☀️';
+          themeToggle.setAttribute('aria-label', '切换到亮色模式');
+        } else {
+          root.removeAttribute('data-theme');
+          themeToggle.textContent = '🌙';
+          themeToggle.setAttribute('aria-label', '切换到暗色模式');
+        }
+        localStorage.setItem('theme', theme);
+      }
+
+      // 初始化
+      applyTheme(getInitialTheme());
+
+      themeToggle.addEventListener('click', () => {
+        const current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        showToast(next === 'dark' ? '🌙 已切换到暗色模式' : '☀️ 已切换到亮色模式', 1500);
+      });
+
+      /* ---------- 2. 导航栏高亮切换 ---------- */
+      const navLinks = document.querySelectorAll('#navLinks a');
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          navLinks.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+          showToast(`导航到「${link.textContent}」`, 1200);
+        });
+      });
+
+      /* ---------- 3. Logo 点击 ---------- */
+      document.getElementById('logo').addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast('🏠 回到首页', 1200);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      /* ---------- 4. “开始使用”按钮 ---------- */
+      document.getElementById('startBtn').addEventListener('click', () => {
+        showToast('🚀 准备部署！把 index.html 上传到任意静态托管即可', 2600);
+        // 平滑滚动到小贴士区域
+        const tips = document.querySelector('section[style*="margin-top"]');
+        if (tips) {
+          tips.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+
+      /* ---------- 5. “查看文档”按钮 ---------- */
+      document.getElementById('docsBtn').addEventListener('click', () => {
+        showToast('📖 文档：将文件拖入 Netlify Drop 即可上线', 2400);
+      });
+
+      /* ---------- 6. 卡片点击展开/收起 ---------- */
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        card.addEventListener('click', () => {
+          card.classList.toggle('expanded');
+          if (card.classList.contains('expanded')) {
+            showToast('👆 已展开详情，再次点击收起', 1400);
+          }
+        });
+        // 键盘支持
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            card.click();
+          }
+        });
+      });
+
+      /* ---------- 7. 状态栏点击复制网址 ---------- */
+      const statusBar = document.getElementById('statusBar');
+      statusBar.addEventListener('click', async () => {
+        const url = window.location.href;
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast('✅ 当前网址已复制到剪贴板', 2000);
+        } catch (err) {
+          // 降级方案
+          const textarea = document.createElement('textarea');
+          textarea.value = url;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand('copy');
+            showToast('✅ 已复制（兼容模式）', 2000);
+          } catch (e2) {
+            showToast('⚠️ 复制失败，请手动复制地址栏', 2200);
+          }
+          document.body.removeChild(textarea);
+        }
+      });
+      statusBar.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          statusBar.click();
+        }
+      });
+
+      /* ---------- 8. 页脚链接点击 ---------- */
+      document.querySelectorAll('[data-footer]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const name = link.textContent;
+          showToast(`「${name}」页面（演示占位）`, 1600);
+        });
+      });
+
+      /* ---------- 9. 回到顶部（悬浮按钮 + 页脚链接） ---------- */
+      const backToTop = document.getElementById('backToTop');
+      const topLink = document.getElementById('topLink');
+
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      backToTop.addEventListener('click', scrollToTop);
+      topLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        scrollToTop();
+      });
+
+      // 滚动时控制悬浮按钮显示
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          backToTop.classList.add('show');
+        } else {
+          backToTop.classList.remove('show');
+        }
+      }, { passive: true });
+
+      /* ---------- 10. 键盘快捷方式（按 T 切换主题，按 Esc 关闭提示） ---------- */
+      document.addEventListener('keydown', (e) => {
+        // 如果焦点在输入框/可编辑区域，跳过
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+
+        if (e.key === 't' || e.key === 'T') {
+          themeToggle.click();
+        }
+        if (e.key === 'Escape') {
+          toastEl.classList.remove('show');
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>
